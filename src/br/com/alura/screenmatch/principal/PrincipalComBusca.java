@@ -20,28 +20,30 @@ public class PrincipalComBusca {
         var busca = buscaFilme.nextLine();
 
         String retonaBuscaFilme = "http://www.omdbapi.com/?t=" + busca + "&apikey=c72c96bf";
-
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(retonaBuscaFilme))
-                .build();
-        HttpResponse<String> response = client
-                .send(request, HttpResponse.BodyHandlers.ofString());
-        String json = response.body();
-        System.out.println(json);
-
-        Gson gson = new GsonBuilder()
-                .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
-                .create();
-        TituloOmdb meuTituloOmdb = gson.fromJson(json, TituloOmdb.class);
-        System.out.println(meuTituloOmdb);
-
         try{
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(retonaBuscaFilme))
+                    .build();
+            HttpResponse<String> response = client
+                    .send(request, HttpResponse.BodyHandlers.ofString());
+            String json = response.body();
+            System.out.println(json);
+
+            Gson gson = new GsonBuilder()
+                    .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
+                    .create();
+            TituloOmdb meuTituloOmdb = gson.fromJson(json, TituloOmdb.class);
+            System.out.println(meuTituloOmdb);
+
+
             Titulo meuTitulo = new Titulo(meuTituloOmdb);
             System.out.println("\nMeu titulo já convertido");
             System.out.println(meuTitulo);
         }catch (NumberFormatException e){
             System.out.println("Ocorreu um erro:\n" + e.getMessage());
+        }catch (IllegalArgumentException e){
+            System.out.println("Argumento inválido, verifique o endereço");
         }
         System.out.println("Programa finalizado com sucesso!");
     }
