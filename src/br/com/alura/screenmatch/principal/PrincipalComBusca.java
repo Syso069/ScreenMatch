@@ -1,5 +1,6 @@
 package br.com.alura.screenmatch.principal;
 
+import br.com.alura.screenmatch.excecao.ConversaoDeAnoExeception;
 import br.com.alura.screenmatch.modelos.Titulo;
 import br.com.alura.screenmatch.modelos.TituloOmdb;
 import com.google.gson.FieldNamingPolicy;
@@ -8,6 +9,7 @@ import com.google.gson.GsonBuilder;
 
 import java.io.IOException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -18,8 +20,9 @@ public class PrincipalComBusca {
         Scanner buscaFilme = new Scanner(System.in);
         System.out.println("Digite o filme que deseja buscar: ");
         var busca = buscaFilme.nextLine();
+        var buscaSemEspaco = URLEncoder.encode(busca, "UTF-8");
 
-        String retonaBuscaFilme = "http://www.omdbapi.com/?t=" + busca + "&apikey=c72c96bf";
+        String retonaBuscaFilme = "http://www.omdbapi.com/?t=" + buscaSemEspaco + "&apikey=c72c96bf";
         try{
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
@@ -44,6 +47,8 @@ public class PrincipalComBusca {
             System.out.println("Ocorreu um erro:\n" + e.getMessage());
         }catch (IllegalArgumentException e){
             System.out.println("Argumento inválido, verifique o endereço");
+        }catch (ConversaoDeAnoExeception e){
+            System.out.println(e.getMessage());
         }
         System.out.println("Programa finalizado com sucesso!");
     }
