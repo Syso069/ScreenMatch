@@ -14,48 +14,65 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 public class PrincipalComBusca {
     public static void main(String[] args) throws IOException, InterruptedException {
         Scanner buscaFilme = new Scanner(System.in);
-        System.out.println("Digite o filme que deseja buscar: ");
-        var busca = buscaFilme.nextLine();
-        var buscaSemEspaco = URLEncoder.encode(busca, "UTF-8");
+        String busca = "";
+        List<Titulo> listaTitulo = new ArrayList<>();
+        Gson gson = new GsonBuilder()
+                .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
+                .setPrettyPrinting()
+                .create();
 
-        String retonaBuscaFilme = "http://www.omdbapi.com/?t=" + buscaSemEspaco + "&apikey=c72c96bf";
-        try{
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(retonaBuscaFilme))
-                    .build();
-            HttpResponse<String> response = client
-                    .send(request, HttpResponse.BodyHandlers.ofString());
-            String json = response.body();
-            System.out.println(json);
+        while (!busca.equalsIgnoreCase("sair")){
 
-            Gson gson = new GsonBuilder()
-                    .setFieldNamingPolicy(FieldNamingPolicy.UPPER_CAMEL_CASE)
-                    .create();
-            TituloOmdb meuTituloOmdb = gson.fromJson(json, TituloOmdb.class);
-            System.out.println(meuTituloOmdb);
+            System.out.println("Digite um filme para buscar:");
+            busca = buscaFilme.nextLine();
+
+            var buscaSemEspaco = URLEncoder.encode(busca, "UTF-8");
+
+            if (busca.equalsIgnoreCase("sair")){
+                break;
+            }
+
+            String retonaBuscaFilme = "http://www.omdbapi.com/?t=" + buscaSemEspaco + "&apikey=c72c96bf";
+            try{
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(retonaBuscaFilme))
+                        .build();
+                HttpResponse<String> response = client
+                        .send(request, HttpResponse.BodyHandlers.ofString());
+                String json = response.body();
+                System.out.println(json);
+
+                TituloOmdb meuTituloOmdb = gson.fromJson(json, TituloOmdb.class);
+                System.out.println(meuTituloOmdb);
 
 
-            Titulo meuTitulo = new Titulo(meuTituloOmdb);
-            System.out.println("\nMeu titulo já convertido");
-            System.out.println(meuTitulo);
+                Titulo meuTitulo = new Titulo(meuTituloOmdb);
+                System.out.println("\nMeu titulo já convertido");
+                System.out.println(meuTitulo);
 
-            FileWriter escrita = new FileWriter("filmes.txt");
-            escrita.write(meuTitulo.toString());
-            escrita.close();
+                listaTitulo.add(meuTitulo);
 
-        }catch (NumberFormatException e){
-            System.out.println("Ocorreu um erro:\n" + e.getMessage());
-        }catch (IllegalArgumentException e){
-            System.out.println("Argumento inválido, verifique o endereço");
-        }catch (ConversaoDeAnoExeception e){
-            System.out.println(e.getMessage());
+            }catch (NumberFormatException e){
+                System.out.println("Ocorreu um erro:\n" + e.getMessage());
+            }catch (IllegalArgumentException e){
+                System.out.println("Argumento inválido, verifique o endereço");
+            }catch (ConversaoDeAnoExeception e){
+                System.out.println(e.getMessage());
+            }
         }
+        System.out.println(listaTitulo);
+
+        FileWriter escrita = new FileWriter("filmes.json");
+        escrita.write(gson.toJson(listaTitulo));
+        escrita.close();
         System.out.println("Programa finalizado com sucesso!");
     }
 }
